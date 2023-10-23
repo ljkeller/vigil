@@ -1,22 +1,50 @@
 """This script captures video from a camera and displays it in grayscale"""
 
 import sys
+import time
 
 import cv2 as cv
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
-    QLabel,
-    QGridLayout,
-    QWidget,
     QGraphicsScene,
     QGraphicsView,
+    QGridLayout,
+    QLabel,
+    QSplashScreen,
     QVBoxLayout,
+    QWidget,
 )
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtCore import QTimer, Qt
+
+from generated_ui.splash import SplashUI
 
 VIRAT_PATH = "/home/lucaskeller/code/cv/vigil/videos/v"
 VIRAT_FILETYPE = ".mpg"
+
+
+class SplashScreen(QSplashScreen):
+    """A custom splash screen widget with a progress bar for the Vigil application."""
+
+    def __init__(self):
+        super(QSplashScreen, self).__init__()
+
+        self.ui = SplashUI()
+        self.ui.setupUi(self)
+
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        pixmap = QPixmap("images/splash_grad.png")
+        self.setPixmap(pixmap)
+
+    def progress(self):
+        """
+        Iteratively updates the progress bar on the user interface.
+        """
+        for i in range(101):
+            time.sleep(0.01)
+            self.ui.progress_bar.setValue(i)
+            QApplication.processEvents()
+
 
 class PixelWindow(QWidget):
     """
@@ -96,6 +124,10 @@ def main():
     """
     app = QApplication([])
 
+    splash = SplashScreen()
+    splash.show()
+    splash.progress()
+
     window = QWidget()
     grid = QGridLayout()
 
@@ -110,6 +142,8 @@ def main():
 
     window.setLayout(grid)
     window.show()
+
+    splash.finish(window)
 
     sys.exit(app.exec())
 
