@@ -6,8 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
-from generated_ui.splash_ui import SplashUI
-
+from vigil.generated_ui.splash_ui import SplashUI
 
 class VigilSplashWindow(QSplashScreen):
     """A custom splash screen widget with a progress bar for the Vigil application."""
