@@ -1,6 +1,7 @@
 """This script captures video from a camera and displays it in grayscale"""
 
 import sys
+from enum import Enum, auto
 
 import cv2 as cv
 from PyQt5.QtCore import Qt
@@ -12,6 +13,18 @@ from vigil.splash_window import VigilSplashWindow
 
 VIRAT_PATH = "/home/lucaskeller/code/cv/vigil/videos/v"
 VIRAT_FILETYPE = ".mpg"
+
+
+class VigilStreamFocus(Enum):
+    """
+    An enumeration of the possible video streams that the user can focus on.
+    """
+
+    STREAM_1 = auto()
+    STREAM_2 = auto()
+    STREAM_3 = auto()
+    STREAM_4 = auto()
+    CONCURRENT = auto()
 
 
 class VigilControllerWindow(QWidget):
@@ -29,6 +42,28 @@ class VigilControllerWindow(QWidget):
         self.ui.setupUi(self)
 
         self.setWindowFlags(Qt.FramelessWindowHint)
+        self.define_on_click()
+
+    def define_on_click(self):
+        """
+        Connects the click events of the push buttons to the corresponding stream focus method of 
+        the main app.
+        """
+        self.ui.pushButton.clicked.connect(
+            lambda: self.main_app.focus_stream(VigilStreamFocus.STREAM_1)
+        )
+        self.ui.pushButton_2.clicked.connect(
+            lambda: self.main_app.focus_stream(VigilStreamFocus.STREAM_2)
+        )
+        self.ui.pushButton_3.clicked.connect(
+            lambda: self.main_app.focus_stream(VigilStreamFocus.STREAM_3)
+        )
+        self.ui.pushButton_4.clicked.connect(
+            lambda: self.main_app.focus_stream(VigilStreamFocus.STREAM_4)
+        )
+        self.ui.pushButton_5.clicked.connect(
+            lambda: self.main_app.focus_stream(VigilStreamFocus.CONCURRENT)
+        )
 
 
 class MainWindow(QMainWindow):
@@ -93,6 +128,16 @@ class MainWindow(QMainWindow):
         """
         for widget in QApplication.topLevelWidgets():
             widget.close()
+
+    def focus_stream(self, stream: VigilStreamFocus):
+        """
+        Focuses the main window on a particular video stream.
+
+        :param stream: The video stream to focus on.
+        """
+        print(stream)
+        if stream == VigilStreamFocus.CONCURRENT:
+            print("Special, default case!")
 
 
 def main():
