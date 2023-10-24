@@ -1,52 +1,12 @@
-"""This script captures video from a camera and displays it in grayscale"""
-
-import sys
-import time
+"""Implements a widget that displays a video feed from a cv.VideoCapture object."""
 
 import cv2 as cv
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import (
-    QApplication,
-    QGraphicsScene,
-    QGraphicsView,
-    QGridLayout,
-    QLabel,
-    QSplashScreen,
-    QVBoxLayout,
-    QWidget,
-)
-
-from generated_ui.splash import SplashUI
-
-VIRAT_PATH = "/home/lucaskeller/code/cv/vigil/videos/v"
-VIRAT_FILETYPE = ".mpg"
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QLabel, QVBoxLayout, QWidget
 
 
-class SplashScreen(QSplashScreen):
-    """A custom splash screen widget with a progress bar for the Vigil application."""
-
-    def __init__(self):
-        super(QSplashScreen, self).__init__()
-
-        self.ui = SplashUI()
-        self.ui.setupUi(self)
-
-        self.setWindowFlags(Qt.FramelessWindowHint)
-        pixmap = QPixmap("images/splash_grad.png")
-        self.setPixmap(pixmap)
-
-    def progress(self):
-        """
-        Iteratively updates the progress bar on the user interface.
-        """
-        for i in range(101):
-            time.sleep(0.01)
-            self.ui.progress_bar.setValue(i)
-            QApplication.processEvents()
-
-
-class PixelWindow(QWidget):
+class PixelView(QWidget):
     """
     A widget that displays a live video feed from a cv.VideoCapture object.
 
@@ -116,37 +76,3 @@ class PixelWindow(QWidget):
         image = QImage(frame, *self.dimensions, QImage.Format_RGB888).rgbSwapped()
         pixmap = QPixmap.fromImage(image)
         self.pixmap_item.setPixmap(pixmap)
-
-
-def main():
-    """
-    Initializes a GUI window with four video streams from VIRAT dataset.
-    """
-    app = QApplication([])
-
-    splash = SplashScreen()
-    splash.show()
-    splash.progress()
-
-    window = QWidget()
-    grid = QGridLayout()
-
-    caps = [cv.VideoCapture(VIRAT_PATH + str(i) + VIRAT_FILETYPE) for i in range(1, 5)]
-    pix_windows = iter(
-        [PixelWindow(cap, name="VIRAT_" + str(idx)) for idx, cap in enumerate(caps)]
-    )
-    grid.addWidget(next(pix_windows), 0, 0)
-    grid.addWidget(next(pix_windows), 0, 1)
-    grid.addWidget(next(pix_windows), 1, 0)
-    grid.addWidget(next(pix_windows), 1, 1)
-
-    window.setLayout(grid)
-    window.show()
-
-    splash.finish(window)
-
-    sys.exit(app.exec())
-
-
-if __name__ == "__main__":
-    main()
