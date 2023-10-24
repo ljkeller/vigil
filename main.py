@@ -3,13 +3,32 @@
 import sys
 
 import cv2 as cv
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QGridLayout, QMainWindow, QWidget
 
+from vigil.generated_ui.vigil_controller import VigilControllerUI
 from vigil.pixel_view import PixelView
 from vigil.splash_window import VigilSplashWindow
 
 VIRAT_PATH = "/home/lucaskeller/code/cv/vigil/videos/v"
 VIRAT_FILETYPE = ".mpg"
+
+
+class VigilControllerWindow(QWidget):
+    """
+    A window that displays the VigilControllerUI and allows the user to interact with it.
+
+    :param main_app: The main application object.
+    """
+
+    def __init__(self, main_app):
+        super().__init__()
+        self.main_app = main_app
+
+        self.ui = VigilControllerUI()
+        self.ui.setupUi(self)
+
+        self.setWindowFlags(Qt.FramelessWindowHint)
 
 
 class MainWindow(QMainWindow):
@@ -62,6 +81,19 @@ class MainWindow(QMainWindow):
         super().show()
         self.center()
 
+    # pylint: disable=invalid-name
+    def closeEvent(self, _):
+        """Close all top-level windows when main window is closed.
+
+        Note
+            Implementation of https://doc.qt.io/qt-5/qwidget.html#closeEvent
+
+        Args:
+            _: The close event.
+        """
+        for widget in QApplication.topLevelWidgets():
+            widget.close()
+
 
 def main():
     """
@@ -74,6 +106,9 @@ def main():
     main_window = MainWindow()
     main_window.show()
     splash.finish(main_window)
+
+    controller_window = VigilControllerWindow(main_window)
+    controller_window.show()
 
     sys.exit(app.exec())
 
