@@ -22,6 +22,8 @@ class VigilSplashWindow(QSplashScreen):
         pixmap = QPixmap("images/splash_grad.png")
         self.setPixmap(pixmap)
 
+        self.center()
+
     def progress(self):
         """
         Iteratively updates the progress bar on the user interface.
@@ -30,3 +32,12 @@ class VigilSplashWindow(QSplashScreen):
             time.sleep(0.01)
             self.ui.progress_bar.setValue(i)
             QApplication.processEvents()
+
+    def center(self):
+        """
+        Centers the splash screen on the user's screen.
+        """
+        relative_geometry = self.frameGeometry()
+        center_point = QApplication.desktop().availableGeometry().center()
+        relative_geometry.moveCenter(center_point)
+        self.move(relative_geometry.topLeft())

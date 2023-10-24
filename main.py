@@ -40,6 +40,18 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(grid)
         self.setCentralWidget(central_widget)
 
+    def center(self):
+        """Centers the main window on the user's screen."""
+        relative_geometry = self.frameGeometry()
+        center_point = QApplication.desktop().availableGeometry().center()
+        relative_geometry.moveCenter(center_point)
+        self.move(relative_geometry.topLeft())
+
+    def show(self):
+        """Show main application in center of screen."""
+        super().show()
+        self.center()
+
 
 def main():
     """
