@@ -24,6 +24,17 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("VIGIL")
         central_widget = QWidget()
+
+        grid = self.create_videocapture_grid()
+
+        central_widget.setLayout(grid)
+        self.setCentralWidget(central_widget)
+
+    def create_videocapture_grid(self):
+        """
+        Creates and returns a grid of four video capture windows using
+        cv.VideoCapture.
+        """
         grid = QGridLayout()
 
         caps = [
@@ -37,8 +48,7 @@ class MainWindow(QMainWindow):
         grid.addWidget(next(pix_windows), 1, 0)
         grid.addWidget(next(pix_windows), 1, 1)
 
-        central_widget.setLayout(grid)
-        self.setCentralWidget(central_widget)
+        return grid
 
     def center(self):
         """Centers the main window on the user's screen."""
