@@ -78,6 +78,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("VIGIL")
         central_widget = QWidget()
+        central_widget.setFixedSize(1920, 1080)
 
         grid = self.create_videocapture_grid()
 
