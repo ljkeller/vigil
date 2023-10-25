@@ -5,6 +5,10 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QLabel, QVBoxLayout, QWidget
 
+# Assuming 1080p is the maximum resolution of the stream. This application
+# targets 1080p monitors and cameras of resolution <= 1080p.
+UPSCALE_DIMENSIONS = (1920, 1080)
+
 
 class PixelView(QWidget):
     """
@@ -19,6 +23,7 @@ class PixelView(QWidget):
     def __init__(self, video_capture: cv.VideoCapture, name, fps=30):
         super().__init__()
         self.video_capture = video_capture
+        self.upscale = False
         self.dimensions = (
             int(self.video_capture.get(cv.CAP_PROP_FRAME_WIDTH)),
             int(self.video_capture.get(cv.CAP_PROP_FRAME_HEIGHT)),
@@ -94,6 +99,8 @@ class PixelView(QWidget):
         _, frame = self.video_capture.read()
         image = QImage(frame, *self.dimensions, QImage.Format_RGB888).rgbSwapped()
         pixmap = QPixmap.fromImage(image)
+        if self.upscale:
+            pixmap = pixmap.scaled(*UPSCALE_DIMENSIONS, Qt.KeepAspectRatio)
         self.pixmap_item.setPixmap(pixmap)
 
     def hide(self, **kwargs):
@@ -105,11 +112,18 @@ class PixelView(QWidget):
         super().hide(**kwargs)
         self.timer.stop()
 
-    def show(self, **kwargs):
+    def show(self):
         """
         Displays the pixel view and starts the timer.
-
-        :param kwargs: Additional arguments to pass to the parent class's show method.
         """
-        super().show(**kwargs)
+        super().show()
         self.timer.start()
+
+    def upscale_stream(self, is_upscaled: bool):
+        """
+        Sets whether the stream should be upscaled or not.
+
+        Args:
+            is_upscaled (bool): Whether the stream should be upscaled or not.
+        """
+        self.upscale = is_upscaled

@@ -136,22 +136,19 @@ class MainWindow(QMainWindow):
         :param stream: The video stream to focus on.
         """
         if stream == VigilStreamFocus.CONCURRENT:
-            self.pixel_widgets[VigilStreamFocus.STREAM_0].show()
-            self.pixel_widgets[VigilStreamFocus.STREAM_1].show()
-            self.pixel_widgets[VigilStreamFocus.STREAM_2].show()
-            self.pixel_widgets[VigilStreamFocus.STREAM_3].show()
+            for pixel_widget in self.pixel_widgets:
+                pixel_widget.upscale_stream(False)
+                pixel_widget.show()
         else:
             # Hide all widgets to restructure grid layout, then selectively show
             # the desired widget.
             # Note: we still want the central widget to be the parent of the
             # widgets, so we don't delete them.
-            self.pixel_widgets[VigilStreamFocus.STREAM_0].hide()
-            self.pixel_widgets[VigilStreamFocus.STREAM_1].hide()
-            self.pixel_widgets[VigilStreamFocus.STREAM_2].hide()
-            self.pixel_widgets[VigilStreamFocus.STREAM_3].hide()
+            for pixel_widget in self.pixel_widgets:
+                pixel_widget.hide()
 
+            self.pixel_widgets[stream].upscale_stream(True)
             self.pixel_widgets[stream].show()
-            # TODO: Expand the pixmap to fill the entire screen
 
 
 def main():
