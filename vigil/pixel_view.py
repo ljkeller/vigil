@@ -25,7 +25,27 @@ class PixelView(QWidget):
         )
 
         self.setup_gui(name)
-        self.continuously_refresh(fps)
+        self.timer = self.setup_continuos_streaming(fps)
+
+    def setup_continuos_streaming(self, fps):
+        """
+        Sets up a continuous streaming of frames from the camera to the GUI at the specified
+        frames per second.
+
+        Args:
+            fps (int): The desired frames per second for the streaming.
+
+        Returns:
+            QTimer: The timer object used to control the streaming.
+        """
+        timer = QTimer(self)
+        timer.timeout.connect(self.extract_cv2_frame_to_pixmap)
+
+        period_ms = int(1000 / fps)
+        timer.setInterval(period_ms)
+        timer.start()
+
+        return timer
 
     def continuously_refresh(self, fps):
         """
@@ -34,11 +54,10 @@ class PixelView(QWidget):
         Args:
             fps (int): The desired frames per second to display.
         """
-        timer = QTimer(self)
-        period_ms = int(1000 / fps)
-        timer.setInterval(period_ms)
-        timer.timeout.connect(self.extract_cv2_frame_to_pixmap)
-        timer.start()
+        if fps > 0:
+            self.timer.start()
+        else:
+            self.timer.stop()
 
     def setup_gui(self, name):
         """
@@ -76,3 +95,21 @@ class PixelView(QWidget):
         image = QImage(frame, *self.dimensions, QImage.Format_RGB888).rgbSwapped()
         pixmap = QPixmap.fromImage(image)
         self.pixmap_item.setPixmap(pixmap)
+
+    def hide(self, **kwargs):
+        """
+        Hides the pixel view and stops the timer.
+
+        :param kwargs: Additional keyword arguments to pass to the parent class's `hide` method.
+        """
+        super().hide(**kwargs)
+        self.timer.stop()
+
+    def show(self, **kwargs):
+        """
+        Displays the pixel view and starts the timer.
+
+        :param kwargs: Additional arguments to pass to the parent class's show method.
+        """
+        super().show(**kwargs)
+        self.timer.start()
