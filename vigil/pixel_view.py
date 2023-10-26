@@ -75,16 +75,16 @@ class PixelView(QWidget):
         pixmap = QPixmap(*self.dimensions)
         self.pixmap_item = scene.addPixmap(pixmap)
 
-        view = QGraphicsView(self)
-        view.setScene(scene)
-        view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.pix_graphics_view = QGraphicsView(self)
+        self.pix_graphics_view.setScene(scene)
+        self.pix_graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.pix_graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         text = QLabel(name, self)
 
         stack_layout = QVBoxLayout(self)
         stack_layout.addWidget(text)
-        stack_layout.addWidget(view)
+        stack_layout.addWidget(self.pix_graphics_view)
 
     def __del__(self):
         """
@@ -98,9 +98,15 @@ class PixelView(QWidget):
         """
         _, frame = self.video_capture.read()
         image = QImage(frame, *self.dimensions, QImage.Format_RGB888).rgbSwapped()
-        pixmap = QPixmap.fromImage(image)
         if self.upscale:
-            pixmap = pixmap.scaled(*UPSCALE_DIMENSIONS, Qt.KeepAspectRatio)
+            pixmap = QPixmap.fromImage(image).scaled(
+                *UPSCALE_DIMENSIONS, Qt.KeepAspectRatio
+            )
+        else:
+            pixmap = QPixmap.fromImage(image)
+        # set the scene rect dynamically to fit the size of the pixmap, otherwise
+        # the resulting view may not be centered correctly
+        self.pix_graphics_view.setSceneRect(0, 0, pixmap.width(), pixmap.height())
         self.pixmap_item.setPixmap(pixmap)
 
     def hide(self, **kwargs):
