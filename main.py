@@ -12,7 +12,7 @@ from vigil.pixel_view import PixelView
 from vigil.splash_window import VigilSplashWindow
 
 VIRAT_PATH = "/home/lucaskeller/code/cv/vigil/videos/v"
-VIRAT_FILETYPE = ".mpg"
+VIRAT_FILETYPE = ".mp4"
 
 
 class VigilStreamFocus(IntEnum):

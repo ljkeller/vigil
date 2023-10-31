@@ -43,10 +43,12 @@ class PeopleDetector:
         --------
         None
         """
-
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        boxes, weights = self.hog.detectMultiScale(gray, winStride=(8, 8))
-
+        # These magic numbers are a result of trial and error; they will depend heavily upon your
+        # application.
+        boxes, weights = self.hog.detectMultiScale(
+            gray, winStride=(6, 6), scale=1.5, padding=(8, 8)
+        )
         boxes = np.array([[x, y, x + w, y + h] for (x, y, w, h) in boxes])
         for (x1, y1, x2, y2), weight in zip(boxes, weights):
             if weight > min_confidence:
@@ -141,14 +143,14 @@ class PixelView(QWidget):
         Extracts a frame from the video capture object and displays it in the widget.
         """
         _, frame = self.video_capture.read()
-        self.people_detector.detect_and_bound_people(frame)
-
-        image = QImage(frame, *self.dimensions, QImage.Format_RGB888).rgbSwapped()
         if self.upscale:
+            self.people_detector.detect_and_bound_people(frame)
+            image = QImage(frame, *self.dimensions, QImage.Format_RGB888).rgbSwapped()
             pixmap = QPixmap.fromImage(image).scaled(
                 *UPSCALE_DIMENSIONS, Qt.KeepAspectRatio
             )
         else:
+            image = QImage(frame, *self.dimensions, QImage.Format_RGB888).rgbSwapped()
             pixmap = QPixmap.fromImage(image)
         # set the scene rect dynamically to fit the size of the pixmap, otherwise
         # the resulting view may not be centered correctly
