@@ -1,6 +1,7 @@
 """Implements a widget that displays a video feed from a cv.VideoCapture object."""
 
 import cv2 as cv
+import numpy as np
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QLabel, QVBoxLayout, QWidget
@@ -8,6 +9,48 @@ from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QLabel, QVBoxLayout, 
 # Assuming 1080p is the maximum resolution of the stream. This application
 # targets 1080p monitors and cameras of resolution <= 1080p.
 UPSCALE_DIMENSIONS = (1920, 1080)
+
+
+class PeopleDetector:
+    """
+    A class that detects people in images using a Histogram of Oriented Gradients (HOG) algorithm.
+
+    Attributes:
+    -----------
+    hog : cv2.HOGDescriptor
+        The HOG descriptor used for detecting people.
+    """
+
+    def __init__(self):
+        self.hog = cv.HOGDescriptor()
+        self.hog.setSVMDetector(cv.HOGDescriptor_getDefaultPeopleDetector())
+
+    def detect_and_bound_people(self, frame, min_confidence=0.75):
+        """
+        Detects people in a given frame using a Histogram of Oriented Gradients (HOG) algorithm,
+        and draws bounding boxes around them.
+
+        Parameters:
+        -----------
+        frame : numpy.ndarray
+            The input image frame to detect people in.
+        min_confidence : float, optional
+            The minimum confidence threshold for a detected person to be considered valid.
+            Defaults to 0.75... OpenCV documentation doesnt specify what the max confidence
+            value is, but I've seen weights > 1.0
+
+        Returns:
+        --------
+        None
+        """
+
+        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        boxes, weights = self.hog.detectMultiScale(gray, winStride=(8, 8))
+
+        boxes = np.array([[x, y, x + w, y + h] for (x, y, w, h) in boxes])
+        for (x1, y1, x2, y2), weight in zip(boxes, weights):
+            if weight > min_confidence:
+                cv.rectangle(frame, (x1, y1), (x2, y2), (65, 195, 99), 2)
 
 
 class PixelView(QWidget):
@@ -23,6 +66,7 @@ class PixelView(QWidget):
     def __init__(self, video_capture: cv.VideoCapture, name, fps=30):
         super().__init__()
         self.video_capture = video_capture
+        self.people_detector = PeopleDetector()
         self.upscale = False
         self.dimensions = (
             int(self.video_capture.get(cv.CAP_PROP_FRAME_WIDTH)),
@@ -97,6 +141,8 @@ class PixelView(QWidget):
         Extracts a frame from the video capture object and displays it in the widget.
         """
         _, frame = self.video_capture.read()
+        self.people_detector.detect_and_bound_people(frame)
+
         image = QImage(frame, *self.dimensions, QImage.Format_RGB888).rgbSwapped()
         if self.upscale:
             pixmap = QPixmap.fromImage(image).scaled(
